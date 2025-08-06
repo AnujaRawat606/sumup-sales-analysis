@@ -28,10 +28,7 @@ END ASC,  -- Signed first
    FROM staging_leads l
    LEFT JOIN stg_opportunities o
        ON l.converted_account_id = o.account_id
-
-
 )
-
 
 SELECT
    lead_id,
