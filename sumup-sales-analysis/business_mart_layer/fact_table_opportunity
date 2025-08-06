@@ -1,0 +1,19 @@
+SELECT
+   o.opportunity_id AS opportunity_id,
+   o.account_id,
+   o.opportunity_created_at AS opportunity_created_at,
+   o.quote_created_at as quote_created_date,
+   o.quote_signed_at as quote_signed_date,
+   CASE
+       WHEN o.quote_signed_at IS NOT NULL THEN 1
+       ELSE 0
+   END AS is_signed,
+   o.quote_mrr,
+   l.lead_id AS attributed_lead_id,
+   l.utm_source AS utm_source,
+   l.country AS country,
+   l.first_meeting_scheduled_at AS first_meeting_date
+FROM stg_opportunities o
+LEFT JOIN staging_leads l
+   ON l.converted_account_id = o.account_id;
+

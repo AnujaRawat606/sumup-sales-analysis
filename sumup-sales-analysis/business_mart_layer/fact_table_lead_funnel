@@ -1,0 +1,60 @@
+ITH lead_opp_candidates AS (
+   SELECT
+       l.lead_id AS lead_id,
+       l.converted_account_id AS account_id,
+       l.lead_created_at AS lead_created_at,
+       l.first_reach_out_at AS first_reach_out_date,
+       l.first_meeting_scheduled_at AS first_meeting_scheduled_date,
+       l.first_meeting_created_at AS first_meeting_created_date,
+       l.utm_source AS utm_source,
+       l.country AS country,
+       o.opportunity_id AS opportunity_id,
+       o.opportunity_created_at AS opportunity_created_at,
+       o.quote_created_at as quote_created_date,
+       o.quote_signed_at as quote_signed_date,
+       o.quote_mrr,
+       CASE WHEN o.quote_signed_at IS NOT NULL THEN 1 ELSE 0 END AS is_signed,
+       ABS(DATEDIFF(DAY, l.first_meeting_scheduled_at, o.opportunity_created_at)) AS days_diff,
+       ROW_NUMBER() OVER (
+             PARTITION BY l.lead_id
+             ORDER BY
+                 CASE
+WHEN o.quote_signed_at IS NOT NULL THEN 0
+ELSE 1
+END ASC,  -- Signed first
+                 ABS(DATEDIFF(DAY, l.first_meeting_scheduled_at, o.opportunity_created_at)) ASC,
+                 o.opportunity_created_at ASC
+       ) AS rn
+   FROM staging_leads l
+   LEFT JOIN stg_opportunities o
+       ON l.converted_account_id = o.account_id
+
+
+)
+
+
+SELECT
+   lead_id,
+   account_id,
+   lead_created_at,
+   first_reach_out_date,
+   first_meeting_created_date,
+   first_meeting_scheduled_date,
+   utm_source,
+   country,
+   opportunity_id,
+   opportunity_created_at,
+   quote_created_date,
+   quote_signed_date,
+   quote_mrr,
+   CASE
+WHEN first_meeting_created_date IS NOT NULL THEN TRUE
+ELSE FALSE
+   END AS has_meeting,
+   CASE
+WHEN opportunity_id IS NOT NULL THEN TRUE
+ELSE FALSE
+   END AS has_opportunity,
+   CASE WHEN quote_signed_date IS NOT NULL THEN TRUE ELSE FALSE END AS has_signed_deal
+FROM lead_opp_candidates
+WHERE rn = 1;
