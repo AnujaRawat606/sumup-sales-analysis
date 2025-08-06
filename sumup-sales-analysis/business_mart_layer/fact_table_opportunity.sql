@@ -1,3 +1,4 @@
+--  Enriching opportunities table with relevant details from leads table, designed for only opportunity KPIs
 SELECT
    o.opportunity_id AS opportunity_id,
    o.account_id,
