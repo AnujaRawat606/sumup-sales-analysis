@@ -1,4 +1,4 @@
-# sumup-sales-analysis\
+# sumup-sales-analysis
 This repository includes data models for both staging and business marts, built using Salesforce data from the Lead, Account, and Opportunity objects.
 The two base data used to create these tables are lead and opportunity objects. Below is a detailed information on the contents of the two tables. 
 
