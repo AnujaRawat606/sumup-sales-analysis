@@ -1,4 +1,8 @@
-ITH lead_opp_candidates AS (
+-- The objective of this query is to create a final business mart enabling dashboarding and self service.
+-- The first cte picks relevant columns from leads and opportunities staging tables, creating a rank between the multiple opportunities 
+--    associated with each lead_id. The ranking is done based on the opportunity which is created closest to the meeting scheduled date
+
+WITH lead_opp_candidates AS (
    SELECT
        l.lead_id AS lead_id,
        l.converted_account_id AS account_id,
@@ -19,17 +23,20 @@ ITH lead_opp_candidates AS (
              PARTITION BY l.lead_id
              ORDER BY
                  CASE
-WHEN o.quote_signed_at IS NOT NULL THEN 0
-ELSE 1
-END ASC,  -- Signed first
+                     WHEN o.quote_signed_at IS NOT NULL THEN 0
+                     ELSE 1
+                 END ASC,  -- Signed first
                  ABS(DATEDIFF(DAY, l.first_meeting_scheduled_at, o.opportunity_created_at)) ASC,
-                 o.opportunity_created_at ASC
+                 o.opportunity_created_at ASC,
+                 o.quote_mrr DESC
        ) AS rn
    FROM staging_leads l
    LEFT JOIN stg_opportunities o
        ON l.converted_account_id = o.account_id
 )
 
+--  final select table, filtering for only opportunities that are ranked 1
+   
 SELECT
    lead_id,
    account_id,
